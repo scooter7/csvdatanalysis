@@ -1,4 +1,5 @@
 streamlit
 openai
 langchain
-python-dotenv
+faiss-cpu
+pandas
