@@ -1,6 +1,5 @@
 import pandas as pd
-from langchain.chains import ConversationalRetrievalChain
-from langchain.chat_models import OpenAI
+import openai
 from langchain.vectorstores import FAISS
 from langchain.embeddings.openai import OpenAIEmbeddings
 import streamlit as st
@@ -10,7 +9,7 @@ def main():
     api_key = st.secrets["openai"]["api_key"]
 
     # Initialize OpenAI with the api_key
-    llm = OpenAI(temperature=0, api_key=api_key, model="gpt-4o-mini")
+    openai.api_key = api_key
 
     st.set_page_config(page_title="Ask your CSV")
     st.header("Ask your CSV 💹")
@@ -29,18 +28,19 @@ def main():
         embeddings = OpenAIEmbeddings(openai_api_key=api_key)
         vector_store = FAISS.from_texts([csv_text], embeddings)
 
-        # Create the Conversational Retrieval Chain
-        retriever = vector_store.as_retriever()
-        qa_chain = ConversationalRetrievalChain.from_llm(llm, retriever)
-
         # Input field for user question
         user_question = st.text_input("Ask a question about your CSV: ")
 
         if user_question is not None and user_question != "":
             try:
                 with st.spinner(text="In progress..."):
-                    # Get the answer from the chain
-                    answer = qa_chain.run(user_question)
+                    # Generate the response from OpenAI directly
+                    response = openai.Completion.create(
+                        engine="gpt-4o-mini",  # Or whatever model you're using
+                        prompt=f"Question: {user_question}\n\nBased on the following CSV data:\n{csv_text}",
+                        max_tokens=100
+                    )
+                    answer = response.choices[0].text.strip()
                     st.write("✔️ " + answer)
             except Exception as e:
                 st.write(f"An exception occurred: {str(e)}")
