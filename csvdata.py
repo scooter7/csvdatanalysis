@@ -30,32 +30,22 @@ def main():
             try:
                 with st.spinner(text="In progress..."):
                     # Pre-process the data using Pandas based on the user's question
+                    result = ""
+
+                    # Example of handling a question: "How many people travel rarely in column C?"
                     if "travel rarely" in user_question.lower() and "column c" in user_question.lower():
                         if "C" in df.columns:
                             count_travel_rarely = df['C'].value_counts().get("Travel_Rarely", 0)
-                            result = f"There are {count_travel_rarely} people who travel rarely."
+                            result = f"There are {count_travel_rarely} people who travel rarely in column C."
                         else:
                             result = "Column 'C' does not exist in the dataset."
 
-                    # More conditions can be added here for different types of analyses based on the question
-                    else:
-                        result = "I couldn't identify what to analyze from the question. Try asking something like 'How many people travel rarely in column C?'"
+                    # If no match, give a default response
+                    if result == "":
+                        result = "I'm sorry, I couldn't understand your question. Please ask something like 'How many people travel rarely in column C?'"
 
-                    # Send the result to OpenAI for summarization or further context
-                    response = openai.chat.completions.create(
-                        model="gpt-4o-mini",  # The chat model you're using
-                        messages=[
-                            {"role": "system", "content": "You are a helpful assistant. Provide a concise and insightful response based on the data analysis provided."},
-                            {"role": "user", "content": f"Here is the data analysis result:\n{result}\n\nPlease provide any additional insights based on this analysis."}
-                        ],
-                        max_tokens=100
-                    )
-
-                    # Extract the final answer
-                    final_answer = response.choices[0].message.content.strip()
-
-                    # Output the concise final answer
-                    st.write("✔️ " + final_answer.strip())
+                    # Send the result as the final answer
+                    st.write("✔️ " + result)
             except Exception as e:
                 st.write(f"An exception occurred: {str(e)}")
 
