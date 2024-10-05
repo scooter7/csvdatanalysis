@@ -60,7 +60,7 @@ def main():
                     pandas_result = process_query_with_pandas(df, user_question)
 
                     # Step 2: Use OpenAI to conversationally rephrase the Pandas result
-                    response = openai.ChatCompletion.create(
+                    response = openai.chat.completions.create(
                         model="gpt-4o-mini",  # The chat model you're using
                         messages=[
                             {"role": "system", "content": "You are a helpful assistant. Rephrase the following information in a conversational tone."},
