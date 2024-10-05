@@ -1,7 +1,5 @@
 import pandas as pd
 import openai
-from langchain.vectorstores import FAISS
-from langchain.embeddings.openai import OpenAIEmbeddings
 import streamlit as st
 
 # Function to chunk large text into smaller pieces
@@ -54,8 +52,9 @@ def main():
         if user_question is not None and user_question != "":
             try:
                 with st.spinner(text="In progress..."):
-                    # Process each chunk separately
                     final_answer = ""
+                    unique_responses = set()  # Keep track of unique responses
+
                     for chunk in chunks:
                         response = openai.chat.completions.create(
                             model="gpt-4o-mini",  # The chat model you're using
@@ -65,9 +64,13 @@ def main():
                             ],
                             max_tokens=100
                         )
-                        # Extract the response content correctly
+                        # Extract the response content
                         answer = response.choices[0].message.content.strip()
-                        final_answer += answer + " "
+
+                        # Only append if the answer is unique
+                        if answer not in unique_responses:
+                            unique_responses.add(answer)
+                            final_answer += answer + " "
 
                     st.write("✔️ " + final_answer.strip())
             except Exception as e:
