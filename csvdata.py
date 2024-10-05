@@ -2,24 +2,6 @@ import pandas as pd
 import openai
 import streamlit as st
 
-# Function to chunk large text into smaller pieces
-def chunk_text(text, max_tokens):
-    """Splits text into chunks, ensuring each chunk is within the token limit."""
-    words = text.split()
-    chunks = []
-    current_chunk = []
-
-    for word in words:
-        current_chunk.append(word)
-        if len(' '.join(current_chunk)) > max_tokens:
-            chunks.append(' '.join(current_chunk[:-1]))
-            current_chunk = [word]
-    
-    if current_chunk:
-        chunks.append(' '.join(current_chunk))
-    
-    return chunks
-
 def main():
     # Load the OpenAI API key from secrets
     api_key = st.secrets["openai"]["api_key"]
@@ -41,40 +23,26 @@ def main():
         st.subheader("First 20 rows of the dataset:")
         st.dataframe(df.head(20))  # Display the first 20 rows
 
-        # Convert DataFrame into a string format for better retrieval
-        csv_text = df.to_string()
-
-        # Define token limit (to be on the safe side, we use a limit lower than the max context size)
-        max_tokens = 8000  # Adjust according to model's context length
-
-        # Chunk the CSV text
-        chunks = chunk_text(csv_text, max_tokens)
-
         # Input field for user question
         user_question = st.text_input("Ask a question about your CSV: ")
 
         if user_question is not None and user_question != "":
             try:
                 with st.spinner(text="In progress..."):
-                    final_answer = ""
-                    unique_responses = set()  # Keep track of unique responses
+                    # Convert the full DataFrame into a string for context
+                    csv_text = df.to_string()
 
-                    for chunk in chunks:
-                        response = openai.chat.completions.create(
-                            model="gpt-4o-mini",  # The chat model you're using
-                            messages=[
-                                {"role": "system", "content": "Be as concise as possible and give only the direct answer to the user's question."},
-                                {"role": "user", "content": f"Here is a portion of the CSV data:\n{chunk}\n\nNow, briefly answer this question: {user_question}"}
-                            ],
-                            max_tokens=50  # Keep response tokens low to avoid overly verbose answers
-                        )
-                        # Extract the response content
-                        answer = response.choices[0].message.content.strip()
-
-                        # Only append if the answer is unique
-                        if answer not in unique_responses:
-                            unique_responses.add(answer)
-                            final_answer += answer + " "
+                    # Send the entire dataset and question to OpenAI in a single request
+                    response = openai.chat.completions.create(
+                        model="gpt-4o-mini",  # The chat model you're using
+                        messages=[
+                            {"role": "system", "content": "You are a helpful assistant. Provide only concise and clear answers based on the full dataset provided."},
+                            {"role": "user", "content": f"Here is the full CSV data:\n{csv_text}\n\nPlease answer this question concisely: {user_question}"}
+                        ],
+                        max_tokens=100  # Adjust token limit as needed
+                    )
+                    # Extract the final answer
+                    final_answer = response.choices[0].message.content.strip()
 
                     # Output the concise final answer
                     st.write("✔️ " + final_answer.strip())
