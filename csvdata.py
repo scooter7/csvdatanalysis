@@ -36,7 +36,11 @@ def main():
     if csv_file is not None:
         # Load the CSV into a DataFrame
         df = pd.read_csv(csv_file)
-        
+
+        # Show the first 20 rows of the dataset in the UI
+        st.subheader("First 20 rows of the dataset:")
+        st.dataframe(df.head(20))  # Display the first 20 rows
+
         # Convert DataFrame into a string format for better retrieval
         csv_text = df.to_string()
 
@@ -60,7 +64,7 @@ def main():
                             model="gpt-4o-mini",  # The chat model you're using
                             messages=[
                                 {"role": "system", "content": "You are a helpful assistant."},
-                                {"role": "user", "content": f"Here is a portion of the CSV data:\n{chunk}\n\nNow, please answer this question: {user_question}"}
+                                {"role": "user", "content": f"Here is a portion of the CSV data:\n{chunk}\n\nNow, please answer this question concisely: {user_question}"}
                             ],
                             max_tokens=100
                         )
@@ -72,6 +76,7 @@ def main():
                             unique_responses.add(answer)
                             final_answer += answer + " "
 
+                    # Output the concise final answer
                     st.write("✔️ " + final_answer.strip())
             except Exception as e:
                 st.write(f"An exception occurred: {str(e)}")
