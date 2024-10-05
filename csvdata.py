@@ -5,7 +5,7 @@ import streamlit as st
 def process_query_with_pandas(df, query):
     """
     Process user's query with Pandas.
-    This function is a starting point that can be expanded for more complex query handling.
+    This function handles dynamic query processing.
     """
     result = ""
     
@@ -25,7 +25,7 @@ def process_query_with_pandas(df, query):
             result = "The dataset does not have an 'Age' column."
 
     else:
-        result = "I'm sorry, I couldn't understand your question. Please ask something like 'How many people travel rarely in column C?' or 'What is the average age?'"
+        result = "I couldn't understand your query. Try asking about 'Travel_Rarely' or 'average age'."
 
     return result
 
@@ -56,23 +56,23 @@ def main():
         if user_question is not None and user_question != "":
             try:
                 with st.spinner(text="In progress..."):
-                    # Process the query with Pandas
+                    # Step 1: Process the query with Pandas
                     pandas_result = process_query_with_pandas(df, user_question)
 
-                    # Use OpenAI to provide conversational response based on the Pandas result
-                    response = openai.chat.completions.create(
+                    # Step 2: Use OpenAI to conversationally rephrase the Pandas result
+                    response = openai.ChatCompletion.create(
                         model="gpt-4o-mini",  # The chat model you're using
                         messages=[
-                            {"role": "system", "content": "You are a helpful assistant. Provide a concise, conversational response based on the provided data analysis."},
-                            {"role": "user", "content": f"Here is the analysis result from the CSV:\n{pandas_result}\n\nPlease provide this result in a conversational style."}
+                            {"role": "system", "content": "You are a helpful assistant. Rephrase the following information in a conversational tone."},
+                            {"role": "user", "content": f"Here is the analysis result:\n{pandas_result}"}
                         ],
                         max_tokens=100
                     )
 
                     # Extract the final answer
-                    final_answer = response.choices[0].message.content.strip()
+                    final_answer = response.choices[0].message['content'].strip()
 
-                    # Output the conversational final answer
+                    # Output the final answer in a conversational way
                     st.write("✔️ " + final_answer.strip())
             except Exception as e:
                 st.write(f"An exception occurred: {str(e)}")
