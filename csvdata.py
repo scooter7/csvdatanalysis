@@ -63,10 +63,10 @@ def main():
                         response = openai.chat.completions.create(
                             model="gpt-4o-mini",  # The chat model you're using
                             messages=[
-                                {"role": "system", "content": "You are a helpful assistant."},
-                                {"role": "user", "content": f"Here is a portion of the CSV data:\n{chunk}\n\nNow, please answer this question concisely: {user_question}"}
+                                {"role": "system", "content": "Be as concise as possible and give only the direct answer to the user's question."},
+                                {"role": "user", "content": f"Here is a portion of the CSV data:\n{chunk}\n\nNow, briefly answer this question: {user_question}"}
                             ],
-                            max_tokens=100
+                            max_tokens=50  # Keep response tokens low to avoid overly verbose answers
                         )
                         # Extract the response content
                         answer = response.choices[0].message.content.strip()
