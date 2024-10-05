@@ -34,13 +34,16 @@ def main():
         if user_question is not None and user_question != "":
             try:
                 with st.spinner(text="In progress..."):
-                    # Generate the response from OpenAI directly
+                    # Generate the response from OpenAI using the chat model
                     response = openai.chat.completions.create(
-                        engine="gpt-4o-mini",  # Or whatever model you're using
-                        prompt=f"Question: {user_question}\n\nBased on the following CSV data:\n{csv_text}",
+                        model="gpt-4o-mini",  # The chat model you're using
+                        messages=[
+                            {"role": "system", "content": "You are a helpful assistant."},
+                            {"role": "user", "content": f"Here is the CSV data:\n{csv_text}\n\nNow, please answer this question: {user_question}"}
+                        ],
                         max_tokens=100
                     )
-                    answer = response.choices[0].text.strip()
+                    answer = response['choices'][0]['message']['content'].strip()
                     st.write("✔️ " + answer)
             except Exception as e:
                 st.write(f"An exception occurred: {str(e)}")
