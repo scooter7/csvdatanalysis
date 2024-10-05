@@ -65,7 +65,8 @@ def main():
                             ],
                             max_tokens=100
                         )
-                        answer = response['choices'][0]['message']['content'].strip()
+                        # Extract the response content
+                        answer = response.choices[0].message['content'].strip()
                         final_answer += answer + " "
 
                     st.write("✔️ " + final_answer.strip())
