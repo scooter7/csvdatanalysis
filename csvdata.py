@@ -35,7 +35,7 @@ def main():
             try:
                 with st.spinner(text="In progress..."):
                     # Generate the response from OpenAI directly
-                    response = openai.Completion.create(
+                    response = openai.chat.completions.create(
                         engine="gpt-4o-mini",  # Or whatever model you're using
                         prompt=f"Question: {user_question}\n\nBased on the following CSV data:\n{csv_text}",
                         max_tokens=100
