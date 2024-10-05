@@ -18,10 +18,11 @@ def main():
 
     if csv_file is not None:
         agent = create_csv_agent(
-            llm, 
-            csv_file,
-            verbose=False # Make it True if you want to see what's the model is doing behind the scene to get the answer 😊
-        )
+    llm, 
+    csv_file,
+    verbose=False,  # Make it True if you want to see what's the model is doing behind the scenes
+    allow_dangerous_code=True  # Enable the functionality to execute arbitrary code
+)
 
         user_question = st.text_input("Ask a question about your CSV: ")
 
