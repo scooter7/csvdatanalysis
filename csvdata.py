@@ -57,7 +57,7 @@ def main():
                     # Process each chunk separately
                     final_answer = ""
                     for chunk in chunks:
-                        response = openai.chat.completions.create(
+                        response = openai.ChatCompletion.create(
                             model="gpt-4o-mini",  # The chat model you're using
                             messages=[
                                 {"role": "system", "content": "You are a helpful assistant."},
@@ -65,8 +65,8 @@ def main():
                             ],
                             max_tokens=100
                         )
-                        # Extract the response content correctly
-                        answer = response['choices'][0]['message']['content'].strip()
+                        # Extract the response content correctly using .get() instead of direct subscripting
+                        answer = response.choices[0].message.get('content', '').strip()
                         final_answer += answer + " "
 
                     st.write("✔️ " + final_answer.strip())
