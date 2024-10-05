@@ -1,5 +1,8 @@
-from langchain_experimental.agents import create_csv_agent  # Updated import
-from openai import OpenAI
+import pandas as pd
+from langchain.chains import ConversationalRetrievalChain
+from langchain.chat_models import OpenAI
+from langchain.vectorstores import FAISS
+from langchain.embeddings.openai import OpenAIEmbeddings
 import streamlit as st
 
 def main():
@@ -16,12 +19,19 @@ def main():
     csv_file = st.file_uploader("Upload your CSV file", type="csv")
 
     if csv_file is not None:
-        # Create the CSV agent
-        agent = create_csv_agent(
-            llm, 
-            csv_file,
-            verbose=False # Set True if you want to see detailed logs
-        )
+        # Load the CSV into a DataFrame
+        df = pd.read_csv(csv_file)
+        
+        # Convert DataFrame into a string format for better retrieval
+        csv_text = df.to_string()
+
+        # Initialize the FAISS vector store
+        embeddings = OpenAIEmbeddings(openai_api_key=api_key)
+        vector_store = FAISS.from_texts([csv_text], embeddings)
+
+        # Create the Conversational Retrieval Chain
+        retriever = vector_store.as_retriever()
+        qa_chain = ConversationalRetrievalChain.from_llm(llm, retriever)
 
         # Input field for user question
         user_question = st.text_input("Ask a question about your CSV: ")
@@ -29,8 +39,8 @@ def main():
         if user_question is not None and user_question != "":
             try:
                 with st.spinner(text="In progress..."):
-                    # Get the answer from the agent
-                    answer = agent.run(user_question)
+                    # Get the answer from the chain
+                    answer = qa_chain.run(user_question)
                     st.write("✔️ " + answer)
             except Exception as e:
                 st.write(f"An exception occurred: {str(e)}")
