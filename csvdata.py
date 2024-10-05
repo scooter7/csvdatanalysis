@@ -2,30 +2,29 @@ import pandas as pd
 import openai
 import streamlit as st
 
-def process_query_with_pandas(df, query):
+def analyze_data_with_pandas(df, user_question):
     """
-    Process user's query with Pandas.
-    This function handles dynamic query processing.
+    Use Pandas to dynamically analyze the CSV based on the user's natural language question.
+    This is where you can extend the logic to handle different types of queries.
     """
     result = ""
+
+    # Example: Handle simple analysis of specific columns like attrition
+    if "attrition" in user_question.lower():
+        if "Attrition" in df.columns and "Department" in df.columns:
+            attrition_data = df[df['Attrition'] == "Yes"]
+            attrition_count = attrition_data['Department'].value_counts()
+            result = f"Attrition by Department:\n{attrition_count.to_string()}"
+        else:
+            result = "The dataset does not contain the required 'Attrition' or 'Department' columns."
     
-    # Handling some example queries dynamically
-    if "travel rarely" in query.lower() and "column c" in query.lower():
-        if 'C' in df.columns:
-            count_travel_rarely = df['C'].value_counts().get("Travel_Rarely", 0)
-            result = f"There are {count_travel_rarely} people who travel rarely in column C."
-        else:
-            result = "Column 'C' does not exist in the dataset."
-
-    elif "average age" in query.lower():
-        if 'Age' in df.columns:
-            avg_age = df['Age'].mean()
-            result = f"The average age is {avg_age:.2f}."
-        else:
-            result = "The dataset does not have an 'Age' column."
-
+    # Example: Handle summary statistics for the entire dataset
+    elif "summary" in user_question.lower() or "statistics" in user_question.lower():
+        result = df.describe().to_string()
+    
+    # You can extend this with more conditions based on the question.
     else:
-        result = "I couldn't understand your query. Try asking about 'Travel_Rarely' or 'average age'."
+        result = "I couldn't understand your question. Try asking something like 'What is the attrition by department?' or 'Can you give me a summary of the data?'"
 
     return result
 
@@ -56,15 +55,15 @@ def main():
         if user_question is not None and user_question != "":
             try:
                 with st.spinner(text="In progress..."):
-                    # Step 1: Process the query with Pandas
-                    pandas_result = process_query_with_pandas(df, user_question)
+                    # Step 1: Analyze the data with Pandas based on the user question
+                    pandas_result = analyze_data_with_pandas(df, user_question)
 
-                    # Step 2: Use OpenAI to conversationally rephrase the Pandas result
-                    response = openai.chat.completions.create(
+                    # Step 2: Use OpenAI to provide a conversational response based on Pandas result
+                    response = openai.ChatCompletion.create(
                         model="gpt-4o-mini",  # The chat model you're using
                         messages=[
-                            {"role": "system", "content": "You are a helpful assistant. Rephrase the following information in a conversational tone."},
-                            {"role": "user", "content": f"Here is the analysis result:\n{pandas_result}"}
+                            {"role": "system", "content": "You are a helpful assistant. Use the following data analysis result to answer the user's question in a conversational tone."},
+                            {"role": "user", "content": f"Here is the analysis result:\n{pandas_result}\n\nPlease provide this result in a conversational style."}
                         ],
                         max_tokens=100
                     )
@@ -72,8 +71,8 @@ def main():
                     # Extract the final answer
                     final_answer = response.choices[0].message['content'].strip()
 
-                    # Output the final answer in a conversational way
-                    st.write("✔️ " + final_answer.strip())
+                    # Output the conversational final answer
+                    st.write("✔️ " + final_answer)
             except Exception as e:
                 st.write(f"An exception occurred: {str(e)}")
 
