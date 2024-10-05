@@ -57,7 +57,7 @@ def main():
                     # Process each chunk separately
                     final_answer = ""
                     for chunk in chunks:
-                        response = openai.chat.completions.create(
+                        response = openai.ChatCompletion.create(
                             model="gpt-4o-mini",  # The chat model you're using
                             messages=[
                                 {"role": "system", "content": "You are a helpful assistant."},
