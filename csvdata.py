@@ -59,7 +59,7 @@ def main():
                     pandas_result = analyze_data_with_pandas(df, user_question)
 
                     # Step 2: Use OpenAI to provide a conversational response based on Pandas result
-                    response = openai.ChatCompletion.create(
+                    response = openai.chat.completions.create(
                         model="gpt-4o-mini",  # The chat model you're using
                         messages=[
                             {"role": "system", "content": "You are a helpful assistant. Use the following data analysis result to answer the user's question in a conversational tone."},
